@@ -15,6 +15,18 @@ security research designed for authorized penetration testing and security resea
 
 > ⚠️ **Important**: This framework is intended solely for authorized security testing, educational purposes, and legitimate security research. Always obtain proper authorization before testing any system. Unauthorized use may violate laws and regulations.
 
+| Startup | 
+|---------|
+| ![Startup](https://github.com/user-attachments/assets/9ff3101e-cea6-4a7c-8d13-af54f8c891cc) | 
+
+| Login | Dashboard |
+|-------|----------|
+| ![Login](https://github.com/user-attachments/assets/ba0135b7-b7fa-4e12-8b30-562765bab8d5) | ![Dashboard](https://github.com/user-attachments/assets/e7872d5c-e78b-47d8-b580-8dcf16b7a79a) |
+
+| Users | Commands | Sys-Settings |
+|-------|----------|--------------|
+| ![Users](https://github.com/user-attachments/assets/5937982b-fe99-4e0f-a859-54ff94b187cd) | ![Commands](https://github.com/user-attachments/assets/092f24e0-f332-4496-b399-2b00b76908c9) | ![Sys-Setting](https://github.com/user-attachments/assets/50c66a61-8ca4-4def-b28c-cce4e08909c4) |
+
 ## 🔥 Features
 
 ### Core Architecture
