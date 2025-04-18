@@ -1,13 +1,13 @@
-# Secure C2 Framework
+# Tor C2 Framework
 
-*Advanced Security C2 Framework for Authorized Testing*
+* Security C2 Framework with Tor Support*
 
 ## 📌 Overview
 
-A robust command and control framework designed for authorized penetration testing and security research.
+security research designed for authorized penetration testing and security research.
 
 - **Encrypted TLS Communication** with client agents
-- **Direct Secure Connection** with end-to-end encryption
+- **Tor Hidden Service** integration for anonymous operation
 - **Multi-user Role-Based Access Control**
 - **Real-time Dashboard** with performance metrics
 - **Multiple Network Testing Vectors** with adaptive rate limiting
@@ -62,15 +62,14 @@ sequenceDiagram
 - **JWT Authentication**: 15-minute expiry with refresh
 - **CSRF Protection**: Per-session tokens
 - **CSP Headers**: Strict Content Security Policy
-- **IP Binding**: Optional client IP verification
-- **Forward Secrecy**: TLS 1.3 with PFS cipher suites
+- **WebRTC Disabled**: Prevents IP leakage
 
 ## 🛠️ Installation
 
 ### Prerequisites
 
 ```bash
-sudo apt install golang-go postgresql
+sudo apt install tor golang-go postgresql
 ```
 
 ### Setup
@@ -80,10 +79,12 @@ Generate certificates:
 go run main.go -gencert
 ```
 
-Configure the server:
+Configure Tor (automatically done by server):
 ```bash
-# Edit config.json to set binding address, ports and security settings
-nano config.json
+cat > /etc/tor/torrc <<EOF
+HiddenServiceDir /var/lib/tor/scream_service/
+HiddenServicePort 80 127.0.0.1:443
+EOF
 ```
 
 ## 🖥️ Dashboard Features
@@ -117,12 +118,12 @@ pie
 
 Start the server:
 ```bash
-go build -o secure-c2 && ./secure-c2
+go build -o scream && ./scream 
 ```
 
-Access via HTTPS:
+Access via Tor:
 ```bash
-curl -k https://localhost:443
+torify curl http://youronionaddress.onion
 ```
 
 Default credentials:
@@ -146,17 +147,17 @@ gantt
 ```
 
 - Throughput: 1.2M packets/sec per client
-- Latency: <100ms command propagation (direct connection)
+- Latency: <200ms command propagation
 - Scalability: Tested with 5,000 concurrent clients
 
-## 🔐 Enhanced Security Options
+## 🔒 Security Considerations
 
-### Network Security Configuration
+### Operational Security
 
-- **IP Allowlisting**: Restrict client connections by IP range
-- **Connection Rate Limiting**: Prevent brute force attempts
-- **TLS Certificate Pinning**: For verified client connections
-- **Optional VPN Integration**: For additional security layer
+- All traffic routed through Tor
+- Server IP never exposed to clients
+- Memory-safe implementations
+- No persistent client identifiers
 
 ### Defensive Measures
 
