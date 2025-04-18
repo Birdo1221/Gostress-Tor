@@ -21,7 +21,7 @@ security research designed for authorized penetration testing and security resea
 
 | Login | Dashboard |
 |-------|----------|
-| ![Login](https://github.com/user-attachments/assets/ba0135b7-b7fa-4e12-8b30-562765bab8d5) | ![Dashboard](https://github.com/user-attachments/assets/e7872d5c-e78b-47d8-b580-8dcf16b7a79a) |
+| ![Login](https://github.com/user-attachments/assets/26734671-aae5-4240-a7e6-ee6ed836e5f8) | ![Dashboard](https://github.com/user-attachments/assets/e7872d5c-e78b-47d8-b580-8dcf16b7a79a) |
 
 | Users | Commands | Sys-Settings |
 |-------|----------|--------------|
