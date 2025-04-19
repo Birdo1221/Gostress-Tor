@@ -1,10 +1,12 @@
 # Tor C2 Framework
 
-* Security C2 Framework with Tor Support*
+* Tor C2 Framework with Tor Support*
 
 ## 📌 Overview
 
-security research designed for authorized penetration testing and security research.
+> This does not require or support proxies by default. However, you can configure a proxy for the bot to connect through and then route all traffic through Tor to reach the domain. This adds an extra layer of anonymity, while also protecting the server's infrastructure from being directly exposed.
+> 
+>  On the downside, it introduces slower connection times, potential instability due to Tor exit node changes, and added complexity during setup and debugging. It may also cause some services to block traffic or flag it as suspicious. So while it enhances privacy and makes tracking harder, it also comes with trade-offs in terms of performance and reliability.
 
 - **Encrypted TLS Communication** with client agents
 - **Tor Hidden Service** integration for anonymous operation
