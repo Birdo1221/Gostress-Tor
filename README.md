@@ -1,6 +1,6 @@
 # Tor C2 Framework
 
-* Tor C2 Framework with Tor Support*
+* Tor C2 Framework with Tor Support* + Bot / CLient 
 
 ## 📌 Overview
 
